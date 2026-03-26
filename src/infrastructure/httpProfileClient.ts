@@ -16,7 +16,10 @@ export class HttpProfileClient {
   }
 
   async getMe(xUserId: string, xRoles: string): Promise<ProfileRaw | null> {
-    const url = `${this.base()}/me`;
+    const base = this.base();
+    const url = base.toLowerCase().endsWith("/profiles")
+      ? `${base}/me`
+      : `${base}/profiles/me`;
     const res = await fetch(url, {
       method: "GET",
       headers: {
@@ -26,13 +29,13 @@ export class HttpProfileClient {
     });
 
     if (res.status === 404) return null;
-    if (!res.ok) throw new Error("не удалось найти профиль");
+    // if (!res.ok) throw new Error("не удалось найти профиль");
     return (await res.json()) as unknown;
   }
 }
 
-export function createProfileClient(): HttpProfileClient {
+export function createProfileClient(): HttpProfileClient | null {
   const raw = process.env.PROFILE_SERVICE_BASE_URL?.trim();
-  if (!raw) throw new Error("PROFILE_SERVICE_BASE_URL is not configured");
+  if (!raw) return null;
   return new HttpProfileClient(raw);
 }

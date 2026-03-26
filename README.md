@@ -1,6 +1,6 @@
 # recommendation-service
 
-Микросервис рекомендаций: сортирует задачи (`subjectType=JOB`) или исполнителей (`subjectType=EXECUTOR`) по пересечению стека пользователя (`profile.stack`) и технологий из ответов сервиса заказов.
+Микросервис рекомендаций: сортирует задачи (`subjectType=JOB`) по пересечению стека пользователя (`profile.stack`) и технологий из ответов сервиса заказов.
 
 Важно: сервис **не вырезает поля** из JSON задач/исполнителей. На фронт отдаётся исходный объект (только отсортированный).
 
@@ -52,11 +52,16 @@ npm start
 ## API
 
 - `GET /health` — `{ "status": "ok" }`
-- `GET /recommendations/me?subjectType=JOB|EXECUTOR`
+- `GET /recommendations/me?subjectType=JOB`
   - headers: `X-User-Id`, `X-Roles`
-  - response: `{ "items": [...] }`, где `items` — исходные JSON объекты из jobs-service, отсортированные по score.
+  - response: `{ "items": [...] }`, где `items` — исходные JSON объекты из jobs-service, отсортированные по score
   - если профиль не найден: `{ "error": "не удалось найти профиль" }`
-  - если задачи/исполнители не найдены: `{ "error": "не удалось найти задачи" }` или `{ "error": "не удалось найти исполнителей" }`
+  - если задачи не найдены: `{ "error": "не удалось найти задачи" }`
+- `GET /recommendations/me/cursor?subjectType=JOB`
+  - headers: `X-User-Id`, `X-Roles`, `X-Cursor` (опционально; курсор для постраничной выдачи)
+  - response: `{ "items": [...], "nextCursor": "...", "hasMore": true/false }`, где страница фиксирована: `pageSize=1`
+  - если профиль не найден: `{ "error": "не удалось найти профиль" }`
+  - если задачи не найдены: `{ "error": "не удалось найти задачи" }`
 
 ## Структура
 

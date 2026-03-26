@@ -1,7 +1,10 @@
 import { Router } from "express";
 import type { GetRecommendationsForMe } from "./application/getRecommendationsForMe";
 import { requireAuth } from "./authMiddleware";
-import { createRecommendationsController } from "./controllers/recommendationsController";
+import {
+  createRecommendationsAllController,
+  createRecommendationsCursorController,
+} from "./controllers/recommendationsController";
 
 export function createRoutes(getRecommendations: GetRecommendationsForMe): Router {
   const router = Router();
@@ -10,8 +13,16 @@ export function createRoutes(getRecommendations: GetRecommendationsForMe): Route
     res.json({ status: "ok" });
   });
 
-  const recommendationsMe = createRecommendationsController(getRecommendations);
-  router.get("/recommendations/me", requireAuth, recommendationsMe);
+  router.get(
+    "/recommendations/me",
+    requireAuth,
+    createRecommendationsAllController(getRecommendations),
+  );
+  router.get(
+    "/recommendations/me/cursor",
+    requireAuth,
+    createRecommendationsCursorController(getRecommendations),
+  );
 
   return router;
 }

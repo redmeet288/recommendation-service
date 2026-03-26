@@ -1,4 +1,5 @@
 import "dotenv/config";
+/// <reference path="./types/express.d.ts" />
 import express from "express";
 import { GetRecommendationsForMe } from "./application/getRecommendationsForMe";
 import { createJobsClient } from "./infrastructure/externalJobsClient";
