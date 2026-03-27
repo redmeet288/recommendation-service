@@ -16,15 +16,22 @@ function handleError(err: unknown, res: Response): void {
   res.status(status).json({ error: message });
 }
 
-export function createRecommendationsAllController(useCase: GetRecommendationsForMe) {
-  return async function getRecommendationsMeAll(req: Request, res: Response): Promise<void> {
+export function createRecommendationsAllController(
+  useCase: GetRecommendationsForMe,
+) {
+  return async function getRecommendationsMeAll(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
     const userUuid = req.user?.userUuid;
     if (!userUuid) {
       res.status(401).json({ error: "Unauthorized" });
       return;
     }
     const subjectType = parseSubjectType(
-      typeof req.query.subjectType === "string" ? req.query.subjectType : undefined,
+      typeof req.query.subjectType === "string"
+        ? req.query.subjectType
+        : undefined,
     );
     if (!subjectType) {
       res.status(400).json({ error: "subjectType must be JOB" });
@@ -40,15 +47,22 @@ export function createRecommendationsAllController(useCase: GetRecommendationsFo
   };
 }
 
-export function createRecommendationsCursorController(useCase: GetRecommendationsForMe) {
-  return async function getRecommendationsMeCursor(req: Request, res: Response): Promise<void> {
+export function createRecommendationsCursorController(
+  useCase: GetRecommendationsForMe,
+) {
+  return async function getRecommendationsMeCursor(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
     const userUuid = req.user?.userUuid;
     if (!userUuid) {
       res.status(401).json({ error: "Unauthorized" });
       return;
     }
     const subjectType = parseSubjectType(
-      typeof req.query.subjectType === "string" ? req.query.subjectType : undefined,
+      typeof req.query.subjectType === "string"
+        ? req.query.subjectType
+        : undefined,
     );
     if (!subjectType) {
       res.status(400).json({ error: "subjectType must be JOB" });
@@ -59,6 +73,104 @@ export function createRecommendationsCursorController(useCase: GetRecommendation
       const xCursor = headerString(req, "x-cursor");
       const page = await useCase.executePaged(userUuid, subjectType, xCursor);
       res.json(page);
+    } catch (err: unknown) {
+      handleError(err, res);
+    }
+  };
+}
+
+export function createRecommendationsSeachController(
+  useCase: GetRecommendationsForMe,
+) {
+  return async function getRecommendationsMeSeach(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const userUuid = req.user?.userUuid;
+    if (!userUuid) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const subjectType = parseSubjectType(
+      typeof req.query.subjectType === "string"
+        ? req.query.subjectType
+        : undefined,
+    );
+    if (!subjectType) {
+      res.status(400).json({ error: "subjectType must be JOB" });
+      return;
+    }
+
+    const body =
+      req.body && typeof req.body === "object"
+        ? (req.body as Record<string, unknown>)
+        : null;
+    const title = body && typeof body.title === "string" ? body.title.trim() : "";
+    if (!title) {
+      res
+        .status(400)
+        .json({ error: "title in request body is required" });
+      return;
+    }
+
+    try {
+      const items = await useCase.executeSearchByTitle(
+        userUuid,
+        subjectType,
+        title,
+      );
+      res.json({ items });
+    } catch (err: unknown) {
+      handleError(err, res);
+    }
+  };
+}
+
+export function createRecommendationsBudgetController(
+  useCase: GetRecommendationsForMe,
+) {
+  return async function getRecommendationsByBudget(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const userUuid = req.user?.userUuid;
+    if (!userUuid) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const subjectType = parseSubjectType(
+      typeof req.query.subjectType === "string"
+        ? req.query.subjectType
+        : undefined,
+    );
+    if (!subjectType) {
+      res.status(400).json({ error: "subjectType must be JOB" });
+      return;
+    }
+
+    const body =
+      req.body && typeof req.body === "object"
+        ? (req.body as Record<string, unknown>)
+        : null;
+    const rawBudget = body?.budget;
+    const budget =
+      typeof rawBudget === "number"
+        ? rawBudget
+        : typeof rawBudget === "string"
+          ? Number(rawBudget.trim().replace(",", "."))
+          : NaN;
+    if (!Number.isFinite(budget)) {
+      res.status(400).json({ error: "budget in request body is required" });
+      return;
+    }
+
+    try {
+      const items = await useCase.executeSortByBudget(
+        userUuid,
+        subjectType,
+        budget,
+      );
+      res.json({ items });
     } catch (err: unknown) {
       handleError(err, res);
     }

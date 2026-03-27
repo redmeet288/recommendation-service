@@ -3,10 +3,14 @@ import type { GetRecommendationsForMe } from "./application/getRecommendationsFo
 import { requireAuth } from "./authMiddleware";
 import {
   createRecommendationsAllController,
+  createRecommendationsBudgetController,
   createRecommendationsCursorController,
+  createRecommendationsSeachController,
 } from "./controllers/recommendationsController";
 
-export function createRoutes(getRecommendations: GetRecommendationsForMe): Router {
+export function createRoutes(
+  getRecommendations: GetRecommendationsForMe,
+): Router {
   const router = Router();
 
   router.get("/health", (_req, res) => {
@@ -22,6 +26,21 @@ export function createRoutes(getRecommendations: GetRecommendationsForMe): Route
     "/recommendations/me/cursor",
     requireAuth,
     createRecommendationsCursorController(getRecommendations),
+  );
+  // router.get(
+  //   "/recommendations/me/seach",
+  //   requireAuth,
+  //   createRecommendationsSeachController(getRecommendations),
+  // );
+  router.post(
+    "/recommendations/me/search",
+    requireAuth,
+    createRecommendationsSeachController(getRecommendations),
+  );
+  router.post(
+    "/recommendations/me/sort/budget",
+    requireAuth,
+    createRecommendationsBudgetController(getRecommendations),
   );
 
   return router;
