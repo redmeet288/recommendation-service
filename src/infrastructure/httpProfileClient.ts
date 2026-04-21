@@ -1,3 +1,4 @@
+import "dotenv/config";
 export type ProfileRaw = unknown;
 
 /**
@@ -17,18 +18,28 @@ export class HttpProfileClient {
 
   async getMe(xUserId: string): Promise<ProfileRaw | null> {
     const base = this.base();
-    const url = base.toLowerCase().endsWith("/profiles")
-      ? `${base}/me`
-      : `${base}/profiles/me`;
-    const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        "X-User-Id": xUserId.trim(),
-      },
-    });
+    const url = `${base}/profiles/me`;
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: "GET",
+        headers: {
+          "X-User-Id": xUserId.trim(),
+        },
+      });
+    } catch (err: unknown) {
+      const reason = err instanceof Error ? err.message : "unknown error";
+      throw new Error(
+        `profile-service is unreachable: ${url} (${reason})`,
+      );
+    }
 
     if (res.status === 404) return null;
-    // if (!res.ok) throw new Error("не удалось найти профиль");
+    if (!res.ok) {
+      throw new Error(
+        `profile-service returned ${res.status} for ${url}`,
+      );
+    }
     return (await res.json()) as unknown;
   }
 }

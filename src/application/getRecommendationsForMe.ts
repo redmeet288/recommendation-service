@@ -1,7 +1,13 @@
 import { SubjectType } from "../domain/subjectType";
 import { scoreStackOverlap } from "../domain/recommendationScoring";
-import type { HttpJobsClient, JobsRawItem } from "../infrastructure/externalJobsClient";
-import type { HttpProfileClient, ProfileRaw } from "../infrastructure/httpProfileClient";
+import type {
+  HttpJobsClient,
+  JobsRawItem,
+} from "../infrastructure/externalJobsClient";
+import type {
+  HttpProfileClient,
+  ProfileRaw,
+} from "../infrastructure/httpProfileClient";
 
 type CursorPayload = { id: string };
 
@@ -170,10 +176,10 @@ export class GetRecommendationsForMe {
     subjectType: SubjectType,
   ): Promise<JobsRawItem[]> {
     if (!this.profiles) {
-      throw new Error("не удалось найти профиль");
+      throw new Error("profile client is not configured1");
     }
     if (!this.jobs) {
-      throw new Error("не удалось найти задачи");
+      throw new Error("не удалось найти задачи1");
     }
 
     const profile = await this.profiles.getMe(xUserId);
@@ -183,14 +189,14 @@ export class GetRecommendationsForMe {
 
     const profileStack = extractProfileStack(profile);
 
-    if (subjectType !== SubjectType.JOB) {
-      // EXECUTOR branch removed (upstream endpoint /executors/candidates is not available).
-      throw new Error("subjectType must be JOB");
-    }
+    // if (subjectType !== SubjectType.JOB) {
+    //   // EXECUTOR branch removed (upstream endpoint /executors/candidates is not available).
+    //   throw new Error("subjectType must be JOB");
+    // }
 
     const jobs = await this.jobs.listOpenJobs();
     if (!jobs.length) {
-      throw new Error("не удалось найти задачи");
+      throw new Error("не удалось найти задачи2");
     }
 
     const scored = jobs.map((job) => {
@@ -220,12 +226,16 @@ export class GetRecommendationsForMe {
     xUserId: string,
     subjectType: SubjectType,
     xCursor: string | undefined,
-  ): Promise<{ items: JobsRawItem[]; nextCursor: string | null; hasMore: boolean }> {
+  ): Promise<{
+    items: JobsRawItem[];
+    nextCursor: string | null;
+    hasMore: boolean;
+  }> {
     if (!this.profiles) {
-      throw new Error("не удалось найти профиль");
+      throw new Error("profile client is not configured3");
     }
     if (!this.jobs) {
-      throw new Error("не удалось найти задачи");
+      throw new Error("не удалось найти задачи3");
     }
 
     const profile = await this.profiles.getMe(xUserId);
@@ -241,7 +251,7 @@ export class GetRecommendationsForMe {
 
     const jobs = await this.jobs.listOpenJobs();
     if (!jobs.length) {
-      throw new Error("не удалось найти задачи");
+      throw new Error("не удалось найти задачи4");
     }
 
     const pageSize = 1;
@@ -283,7 +293,10 @@ export class GetRecommendationsForMe {
     const items = page.map((x) => x.job);
     const hasMore = startIndex + pageSize < scored.length;
     const lastItem = items[items.length - 1];
-    const nextCursor = hasMore && lastItem ? encodeCursor({ id: extractCursorId(lastItem)! }) : null;
+    const nextCursor =
+      hasMore && lastItem
+        ? encodeCursor({ id: extractCursorId(lastItem)! })
+        : null;
 
     return { items, nextCursor, hasMore };
   }
@@ -294,10 +307,10 @@ export class GetRecommendationsForMe {
     queryTitle: string,
   ): Promise<JobsRawItem[]> {
     if (!this.profiles) {
-      throw new Error("не удалось найти профиль");
+      throw new Error("profile client is not configured2");
     }
     if (!this.jobs) {
-      throw new Error("не удалось найти задачи");
+      throw new Error("не удалось найти задачи5");
     }
     const profile = await this.profiles.getMe(xUserId);
     if (!profile) {
@@ -309,7 +322,7 @@ export class GetRecommendationsForMe {
 
     const jobs = await this.jobs.listOpenJobs();
     if (!jobs.length) {
-      throw new Error("не удалось найти задачи");
+      throw new Error("не удалось найти задачи6");
     }
 
     const scored = jobs.map((job) => {
@@ -342,10 +355,10 @@ export class GetRecommendationsForMe {
     budgetTarget: number,
   ): Promise<JobsRawItem[]> {
     if (!this.profiles) {
-      throw new Error("не удалось найти профиль");
+      throw new Error("profile client is not configured4");
     }
     if (!this.jobs) {
-      throw new Error("не удалось найти задачи");
+      throw new Error("не удалось найти задачи7");
     }
     const profile = await this.profiles.getMe(xUserId);
     if (!profile) {
@@ -357,7 +370,7 @@ export class GetRecommendationsForMe {
 
     const jobs = await this.jobs.listOpenJobs();
     if (!jobs.length) {
-      throw new Error("не удалось найти задачи");
+      throw new Error("не удалось найти задачи9");
     }
 
     const withBudget = jobs
@@ -365,7 +378,9 @@ export class GetRecommendationsForMe {
         const budget = extractBudget(job);
         return { job, budget };
       })
-      .filter((x): x is { job: JobsRawItem; budget: number } => x.budget !== null);
+      .filter(
+        (x): x is { job: JobsRawItem; budget: number } => x.budget !== null,
+      );
 
     // If upstream has no budget fields, return empty list rather than random ordering.
     if (!withBudget.length) {
@@ -397,10 +412,10 @@ export class GetRecommendationsForMe {
     subjectType: SubjectType,
   ): Promise<string[]> {
     if (!this.profiles) {
-      throw new Error("не удалось найти профиль");
+      throw new Error("profile client is not configured5");
     }
     if (!this.jobs) {
-      throw new Error("не удалось найти задачи");
+      throw new Error("не удалось найти задачи10");
     }
     const profile = await this.profiles.getMe(xUserId);
     if (!profile) {
@@ -412,7 +427,7 @@ export class GetRecommendationsForMe {
 
     const jobs = await this.jobs.listFilteredTasks();
     if (!jobs.length) {
-      throw new Error("не удалось найти задачи");
+      throw new Error("не удалось найти задачи11");
     }
 
     const profileStack = extractProfileStack(profile);
@@ -427,7 +442,9 @@ export class GetRecommendationsForMe {
           score: scoreStackOverlap(profileStack, tags).score,
         };
       })
-      .filter((x): x is { id: string; job: JobsRawItem; score: number } => Boolean(x.id));
+      .filter((x): x is { id: string; job: JobsRawItem; score: number } =>
+        Boolean(x.id),
+      );
 
     scored.sort((a, b) => {
       const byScore = b.score - a.score;
