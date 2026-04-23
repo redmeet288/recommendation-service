@@ -22,6 +22,7 @@ export class HttpJobsClient {
       const reason = err instanceof Error ? err.message : "unknown error";
       throw new Error(`jobs-service is unreachable: ${url} (${reason})`);
     }
+    if (res.status == 404) return [];
     if (!res.ok) {
       throw new Error(`jobs-service returned ${res.status} for ${url}`);
     }
