@@ -29,16 +29,12 @@ export class HttpProfileClient {
       });
     } catch (err: unknown) {
       const reason = err instanceof Error ? err.message : "unknown error";
-      throw new Error(
-        `profile-service is unreachable: ${url} (${reason})`,
-      );
+      throw new Error(`profile-service is unreachable: ${url} (${reason})`);
     }
 
     if (res.status === 404) return null;
     if (!res.ok) {
-      throw new Error(
-        `profile-service returned ${res.status} for ${url}`,
-      );
+      throw new Error(`profile-service returned ${res.status} for ${url}`);
     }
     return (await res.json()) as unknown;
   }
